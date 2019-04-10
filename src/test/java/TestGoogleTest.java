@@ -1,78 +1,61 @@
 import static org.junit.Assert.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.junit.Test;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class TestGoogleTest{
 
-    @Test
-    public void searchbar_is_on_home_page() {
-        WebDriver browser;
-        //Firefox's geckodriver *requires* you to specify its location.
-        System.setProperty("webdriver.gecko.driver", "C:\\Users\\Guesto\\Testing\\geckodriver.exe");
-        browser = new FirefoxDriver();
-        browser.get("http://amazon.com");
-        WebElement searchBar = browser.findElement(By.id("twotabsearchtextbox"));
-        assertTrue((searchBar.isDisplayed()));
-
-        browser.close();
-    }
-
-    @Test
-    public void navigation_bar_is_on_home_page() {
-        WebDriver browser;
-        //Firefox's geckodriver *requires* you to specify its location.
-        System.setProperty("webdriver.gecko.driver", "C:\\Users\\Guesto\\Testing\\geckodriver.exe");
-        browser = new FirefoxDriver();
-        browser.get("http://amazon.com");
-        WebElement searchBar = browser.findElement(By.id("nav-search"));
-        assertTrue((searchBar.isDisplayed()));
-
-        browser.close();
-    }
-
-    public void login_is_on_home_page() {
-        WebDriver browser;
-        //Firefox's geckodriver *requires* you to specify its location.
-        System.setProperty("webdriver.gecko.driver", "C:\\Users\\Guesto\\Testing\\geckodriver.exe");
-        browser = new FirefoxDriver();
-        browser.get("http://amazon.com");
-        WebElement searchBar = browser.findElement(By.id("login"));
-        assertTrue((searchBar.isDisplayed()));
-
-        browser.close();
-    }
 
     @Test
     public void searchbar_with_XPath() {
         WebDriver driver;
-        System.setProperty("webdriver.gecko.driver", "C:\\Users\\Guesto\\Testing\\geckodriver.exe");
-        driver = new FirefoxDriver();
-        driver.get("http://google.com");
-        WebElement searchBar = driver.findElement(By.xpath("//input[contains(@name, 'q')]"));
-        searchBar.click();
-        searchBar.sendKeys("Computers");
-        searchBar.sendKeys(Keys.ENTER);
-        driver.manage().timeouts().implicitlyWait(7,TimeUnit.SECONDS);
-        assertTrue((searchBar.isDisplayed()));
-
-        driver.close();
-    }
-
-    @Test
-    public void password_with_XPath() {
-        WebDriver driver;
+        String searchTerm = "Computers";
+        String productInfo;
         System.setProperty("webdriver.gecko.driver", "C:\\Users\\Guesto\\Testing\\geckodriver.exe");
         driver = new FirefoxDriver();
         driver.get("http://amazon.com");
-        WebElement searchBar = driver.findElement(By.xpath("//form[contains(@name, 'password')]"));
-        assertTrue((searchBar.isDisplayed()));
+        WebElement element = driver.findElement(By.xpath("//input[contains(@id, 'search')]"));
+        element.click();
+        element.sendKeys(searchTerm, Keys.ENTER);
 
-        driver.close();
+        element = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//a[@class = 'a-link-normal a-text-normal'])[1]")));
+
+        element.click();
+
+        element = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//a[@id = 'breadcrumb-back-link']")));
+
+        productInfo = driver.findElement(By.id("productTitle")).getText();
+        element = driver.findElement(By.xpath("//input[@id = 'twotabsearchtextbox']"));
+
+        ((JavascriptExecutor) driver).executeScript("window.open(arguments[0])", "//google.com");
+
+        ArrayList<String> tabs = new ArrayList<String>(driver.getWindowHandles());
+        driver.switchTo().window(tabs.get(1));
+
+        element = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@title = 'Buscar']")));
+        element.click();
+        element.sendKeys(productInfo, Keys.ENTER);
+
+        element = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//div[@class = 'g'])[3]//a")));
+        element.click();
+
+        element = (new WebDriverWait(driver, 10))
+                .until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//h1)[1]")));
+
+        assertTrue((element.isDisplayed()));
+
+        driver.switchTo().window(tabs.get(0));
+        //driver.close();
     }
 }
